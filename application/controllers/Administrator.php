@@ -1,4 +1,6 @@
 <?php 
+require_once   './vendor/autoload.php';
+use PhpOffice\PhpSpreadsheet\IOFactory;
 	class Administrator extends CI_Controller{
 
 		
@@ -171,6 +173,35 @@
 			
 		}
 
+		public function add_recipients($page = 'add-recipients')
+		{
+			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
+		    show_404();
+		   }
+			// Check login
+			if(!$this->session->userdata('login')) {
+				redirect('administrator/index');
+			}
+
+			$data['title'] = 'Create Recipients';
+			//$data['add-user'] = $this->Administrator_Model->get_categories();
+			$this->form_validation->set_rules('recipient_name', 'Recipient Name', 'required');
+			$this->form_validation->set_rules('identifier_number', 'Identifier Number', 'required|callback_check_username_exists');
+			$this->form_validation->set_rules('email', 'Email', 'required|callback_check_email_exists');
+			if($this->form_validation->run() === FALSE){
+				 $this->load->view('administrator/header-script');
+		 	 	 $this->load->view('administrator/header');
+		  		 $this->load->view('administrator/header-bottom');
+		   		 $this->load->view('administrator/'.$page, $data);
+		  		 $this->load->view('administrator/footer');
+			}else{	
+				$this->Administrator_Model->add_recipients();
+				//Set Message
+				$this->session->set_flashdata('success', 'User has been created Successfull.');
+				redirect('administrator/users');
+			}
+			
+		}
 		// Check user name exists
 		public function check_username_exists($username){
 			$this->form_validation->set_message('check_username_exists', 'That username is already taken, Please choose a different one.');
@@ -217,6 +248,29 @@
 		  		$this->load->view('administrator/footer');
 		}
 
+		public function recipients($offset = 0)
+		{
+			// Pagination Config
+			$config['base_url'] = base_url(). 'administrator/recipients/';
+			$config['total_rows'] = $this->db->count_all('recipients');
+			$config['per_page'] = 100;
+			$config['uri_segment'] = 2;
+			$config['attributes'] = array('class' => 'paginate-link');
+
+			// Init Pagination
+			$this->pagination->initialize($config);
+
+			$data['title'] = 'Latest Recipients';
+
+			$data['recipients'] = $this->Administrator_Model->get_recipients(FALSE, $config['per_page'], $offset);
+
+			 	$this->load->view('administrator/header-script');
+		 	 	 $this->load->view('administrator/header');
+		  		 $this->load->view('administrator/header-bottom');
+		   		 $this->load->view('administrator/recipients', $data);
+		  		$this->load->view('administrator/footer');
+		}
+
 		public function delete($id)
 		{
 			$table = base64_decode($this->input->get('table'));
@@ -225,23 +279,7 @@
 			$this->session->set_flashdata('success', 'Data has been deleted Successfully.');
 			header('Location: ' . $_SERVER['HTTP_REFERER']);
 		}
-		public function enable($id)
-		{
-			$table = base64_decode($this->input->get('table'));
-			//$table = $this->input->post('table');
-			$this->Administrator_Model->enable($id,$table);       
-			$this->session->set_flashdata('success', 'Desabled Successfully.');
-			header('Location: ' . $_SERVER['HTTP_REFERER']);
-		}
-		public function desable($id)
-		{
-			$table = base64_decode($this->input->get('table'));
-			//$table = $this->input->post('table');
-			$this->Administrator_Model->desable($id,$table);       
-			$this->session->set_flashdata('success', 'Enabled Successfully.');
-			header('Location: ' . $_SERVER['HTTP_REFERER']);
-		}
-
+		
 		public function update_user($id = NULL)
 		{
 			$data['user'] = $this->Administrator_Model->get_user($id);
@@ -310,775 +348,238 @@
 			
 		}
 
-
-		public function create_product_category()
-		{
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-			
-			$data['title'] = 'Create Category';
-			$this->form_validation->set_rules('name', 'Category Name', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/add-product-category', $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				$this->Administrator_Model->create_product_category();
-
-				//Set Message
-				$this->session->set_flashdata('category_created', 'Your category has been created.');
-				redirect('administrator/product-categories');
-			}
-		}
-		public function product_categories()
-		{
-			$data['title'] = 'Product Categories';
-			$data['product_categories'] = $this->Administrator_Model->product_categories();
-
-			 	$this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/product-categories', $data);
-		  		 $this->load->view('administrator/footer');
-		}
-
-		public function update_product_category($id = NULL)
-		{
-
-			$data['productcategory'] = $this->Administrator_Model->update_product_category($id);
-			//print_r($data['productcategory']);exit;
-			
-			if (empty($data['productcategory'])) {
-				show_404();
-			}
-			$data['title'] = 'Update Product Category';
-
-			$this->load->view('administrator/header-script');
-	 	 	 $this->load->view('administrator/header');
-	  		 $this->load->view('administrator/header-bottom');
-	   		 $this->load->view('administrator/update-product-category', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-		public function update_product_category_data()
-		{
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-			$data['title'] = 'Update Product Category';
-			$this->form_validation->set_rules('name', 'Category Name', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/update-product-category', $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				$this->Administrator_Model->update_product_category_data();
-
-				//Set Message
-				$this->session->set_flashdata('success', 'Your category has been Updated Successfully.');
-				redirect('administrator/product-categories');
-			}
-		}
-
-		public function create_product($page = 'add-product')
-		{
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    show_404();
-		   }
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-
-			$data['product_categories'] = $this->Administrator_Model->product_categories();
-			
-			$data['title'] = 'Create Product';
-
-			$this->form_validation->set_rules('name', 'Name', 'required');
-			$this->form_validation->set_rules('sku', 'SKU', 'required|callback_check_sku_exists');
-			$this->form_validation->set_rules('price', 'Price', 'required');
-			if (empty($_FILES['userfile']['name'])){
-    		$this->form_validation->set_rules('userfile', 'Document', 'required');
-			}
-			$this->form_validation->set_rules('description', 'Product Description', 'required');
-			$this->form_validation->set_rules('quantity', 'Quantity', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/'.$page, $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				//Upload Image
-				$config['upload_path'] = './assets/images/products';
-				$config['allowed_types'] = 'gif|jpg|png|jpeg';
-				$config['max_size'] = '2048';
-				$config['max_width'] = '2000';
-				$config['max_height'] = '2000';
-
-				$this->load->library('upload', $config);
-
-				if(!$this->upload->do_upload()){
-					$errors =  array('error' => $this->upload->display_errors());
-					$post_image = 'noimage.jpg';
-				}else{
-					$data =  array('upload_data' => $this->upload->data());
-					$post_image = $_FILES['userfile']['name'];
-				}
-				$dataID = $this->Administrator_Model->create_product($post_image);
-
-				//$dataID = 1; 
-				if (!empty($_FILES['imgFiles']['name'])){
-				$multipleUpload =  $this->multipleImageUpload($_FILES['imgFiles'],$dataID);
-				}
-				//Set Message
-				$this->session->set_flashdata('success', 'Product has been Added Successfull.');
-				redirect('administrator/products');
-			}
-			
-		}
-
-	public function multipleImageUpload($images,$dataID){
-		$images == $_FILES['imgFiles'];
-        $data = array();
-        if(!empty($_FILES['imgFiles']['name'])){
-            $filesCount = count($_FILES['imgFiles']['name']);
-            for($i = 0; $i < $filesCount; $i++){
-                $_FILES['userFile']['name'] = $_FILES['imgFiles']['name'][$i];
-                $_FILES['userFile']['type'] = $_FILES['imgFiles']['type'][$i];
-                $_FILES['userFile']['tmp_name'] = $_FILES['imgFiles']['tmp_name'][$i];
-                $_FILES['userFile']['error'] = $_FILES['imgFiles']['error'][$i];
-                $_FILES['userFile']['size'] = $_FILES['imgFiles']['size'][$i];
-
-                $uploadPath = './assets/images/products_multiple/';
-                $config['upload_path'] = $uploadPath;
-                $config['allowed_types'] = 'gif|jpg|png';
-                
-                $this->load->library('upload', $config);
-                $this->upload->initialize($config);
-                if($this->upload->do_upload('userFile')){
-                    $fileData = $this->upload->data();
-                    $uploadData[$i]['file_name'] = $fileData['file_name'];
-                     $uploadData[$i]['product_id'] = $dataID;
-                   /* $uploadData[$i]['created'] = date("Y-m-d H:i:s");
-                    $uploadData[$i]['modified'] = date("Y-m-d H:i:s");*/
-                }
-            }
-            
-            if(!empty($uploadData)){
-                //Insert file information into the database
-                $insert = $this->Administrator_Model->insertproductsmultipleImages($uploadData);
-                return $insert;
-               /* $statusMsg = $insert?'Files uploaded successfully.':'Some problem occurred, please try again.';
-                $this->session->set_flashdata('success',$statusMsg);*/
-            }
-        }
-    }
-		// Check Product SKU  exists
-		public function check_sku_exists($sku){
-			$this->form_validation->set_message('check_sku_exists', 'That SKU is already taken, Please choose a different one.');
-
-			if ($this->Administrator_Model->check_sku_exists($sku)) {
-				return true;
-			}else{
-				return false;
-			}
-		}
-
-		public function get_products()
-		{
-			$data['products'] = $this->Administrator_Model->get_products();
-			
-			if (empty($data['products'])) {
-				show_404();
-			}
-			$data['title'] = 'List products';
-
-			$this->load->view('administrator/header-script');
-	 	 	 $this->load->view('administrator/header');
-	  		 $this->load->view('administrator/header-bottom');
-	   		 $this->load->view('administrator/products', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-		public function update_products($id = NULL)
-		{
-			$data['product_categories'] = $this->Administrator_Model->product_categories();
-			$data['productsDetails'] = $this->Administrator_Model->update_products($id);
-			$productId = $data['productsDetails']['id'];
-			$data['productImages'] = $this->Administrator_Model->product_images($productId);
-			
-			if (empty($data['productsDetails'])) {
-				show_404();
-			}
-			$data['title'] = 'Update Details';
-
-			$this->load->view('administrator/header-script');
-	 	 	 $this->load->view('administrator/header');
-	  		 $this->load->view('administrator/header-bottom');
-	   		 $this->load->view('administrator/update-products', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-
-		public function update_products_data($page = 'update-product')
-		{
-
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    show_404();
-		   }
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-			$data['title'] = 'Update Product';
-
-			$this->form_validation->set_rules('name', 'Name', 'required');
-			$this->form_validation->set_rules('price', 'Price', 'required');
-			$this->form_validation->set_rules('description', 'Product Description', 'required');
-			$this->form_validation->set_rules('quantity', 'Quantity', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/'.$page, $data);
-		  		 $this->load->view('administrator/footer');
-
-			}else{
-				//Upload Image
-				$config['upload_path'] = './assets/images/products';
-				$config['allowed_types'] = 'gif|jpg|png|jpeg';
-				$config['max_size'] = '2048';
-				$config['max_width'] = '2000';
-				$config['max_height'] = '2000';
-
-				$this->load->library('upload', $config);
-
-				if(!$this->upload->do_upload()){
-					$errors =  array('error' => $this->upload->display_errors());
-					$data['productsDetails'] = $this->Administrator_Model->update_products($this->input->post('id'));
-					$post_image = $data['productsDetails']['image'];
-				}else{
-					$data =  array('upload_data' => $this->upload->data());
-					$post_image = $_FILES['userfile']['name'];
-				}
-				$dataID = $this->Administrator_Model->update_products_data($post_image);
-
-				//$dataID = 1; 
-				if (!empty($_FILES['imgFiles']['name'])){
-				$multipleUpload =  $this->multipleImageUpload($_FILES['imgFiles'],$this->input->post('id'));
-				}
-				//Set Message
-				$this->session->set_flashdata('success', 'Product has been Updated Successfull.');
-				redirect('administrator/products');
-			}
-		}
-
-		public function create_faq_category()
-		{
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-
-			$data['title'] = 'Create FAQ Category';
-			$this->form_validation->set_rules('name', 'FAQ Category Name', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/add-faq-category', $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				$this->Administrator_Model->create_faq_category();
-				//Set Message
-				$this->session->set_flashdata('success', 'category has been created successfully.');
-				redirect('administrator/faq-categories');
-			}
-		}
-		public function faq_categories()
-		{
-			$data['title'] = 'FAQ Categories';
-			$data['faq_categories'] = $this->Administrator_Model->faq_categories();
-
-			 	$this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/faq-categories', $data);
-		  		 $this->load->view('administrator/footer');
-		}
-
-		public function update_faq_category($id = NULL)
-		{
-
-			$data['faqcategory'] = $this->Administrator_Model->update_faq_category($id);
-
-			$data['title'] = 'Update FAQ Category';
-
-			$this->load->view('administrator/header-script');
-	 	 	 $this->load->view('administrator/header');
-	  		 $this->load->view('administrator/header-bottom');
-	   		 $this->load->view('administrator/update-faq-category', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-		public function update_faq_category_data()
-		{
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-			$data['title'] = 'Update FAQ Category';
-			$this->form_validation->set_rules('name', 'Category Name', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/update-faq-category', $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				$this->Administrator_Model->update_faq_category_data();
-				//Set Message
-				$this->session->set_flashdata('success', 'Your category has been Updated Successfully.');
-				redirect('administrator/faq-categories');
-			}
-		}
-
-		//########################## functions start of faq ##############################
-
-		public function create_faq($page = 'add-faq')
-		{
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    show_404();
-		   }
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-
-			$data['faq_categories'] = $this->Administrator_Model->faq_categories();
-			
-			$data['title'] = 'Create FAQ';
-
-			$this->form_validation->set_rules('question', 'Question', 'required');
-			$this->form_validation->set_rules('answer', 'Answer', 'required');
-			$this->form_validation->set_rules('faq_cat_id', 'FAQ Category Name', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/'.$page, $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				 $this->Administrator_Model->create_faq();
-				//Set Message
-				$this->session->set_flashdata('success', 'FAQ has been Added Successfull.');
-				redirect('administrator/faqs');
-			}
-			
-		}
-
-	
-
-		public function get_faqs($page = 'faqs')
-		{
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    	show_404();
-		   	}
-
-			$data['faqs'] = $this->Administrator_Model->get_faqs();
-
-			$data['title'] = 'List FAQS';
-
-			$this->load->view('administrator/header-script');
-	 	 	$this->load->view('administrator/header');
-	  		$this->load->view('administrator/header-bottom');
-	   		$this->load->view('administrator/faqs', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-		public function update_faqs($id = NULL)
-		{
-			$data['faq_categories'] = $this->Administrator_Model->faq_categories();
-			$data['faqsDetails'] = $this->Administrator_Model->update_faqs($id);
-			
-			$data['title'] = 'Update Details';
-
-			$this->load->view('administrator/header-script');
-	 	 	$this->load->view('administrator/header');
-	  		$this->load->view('administrator/header-bottom');
-	   		$this->load->view('administrator/update-faqs', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-
-		public function update_faqs_data($page = 'update-faqs')
-		{
-
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    show_404();
-		   }
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-			$data['title'] = 'Update faq';
-
-			$this->form_validation->set_rules('question', 'Question', 'required');
-			$this->form_validation->set_rules('answer', 'Answer', 'required');
-			$this->form_validation->set_rules('faq_cat_id', 'FAQ Category Name', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/'.$page, $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				
-				 $this->Administrator_Model->update_faq_data();
-				//Set Message
-				$this->session->set_flashdata('success', 'FAQ has been Updated Successfull.');
-				redirect('administrator/faqs');
-			}
-		}
-
-		//sco pages start
-		public function get_scopages($page = 'scopages')
-		{
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    	show_404();
-		   	}
-
-			$data['scopages'] = $this->Administrator_Model->get_scopages();
-
-			$data['title'] = 'List SCO pages';
-
-			$this->load->view('administrator/header-script');
-	 	 	$this->load->view('administrator/header');
-	  		$this->load->view('administrator/header-bottom');
-	   		$this->load->view('administrator/scopages', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-		public function update_scopages($id = NULL)
-		{
-			$data['scopages'] = $this->Administrator_Model->update_scopages($id);
-			
-			$data['title'] = 'Update Details';
-
-			$this->load->view('administrator/header-script');
-	 	 	$this->load->view('administrator/header');
-	  		$this->load->view('administrator/header-bottom');
-	   		$this->load->view('administrator/update-scopages', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-
-		public function update_scopages_data($page = 'update-scopages')
-		{
-
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    show_404();
-		   }
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-			$data['title'] = 'Update SCO Details';
-
-			$this->form_validation->set_rules('title', 'Title', 'required');
-			/*$this->form_validation->set_rules('answer', 'Answer', 'required');
-			$this->form_validation->set_rules('faq_cat_id', 'FAQ Category Name', 'required');*/
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/'.$page, $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				
-				 $this->Administrator_Model->update_scopages_data();
-				//Set Message
-				$this->session->set_flashdata('success', 'SCO Details has been Updated Successfull.');
-				redirect('administrator/scopages');
-			}
-		}
-
-		//social links
-		public function get_sociallinks($page = 'sociallinks')
-		{
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    	show_404();
-		   	}
-
-			$data['sociallinks'] = $this->Administrator_Model->get_sociallinks();
-
-			$data['title'] = 'sociallinks';
-
-			$this->load->view('administrator/header-script');
-	 	 	$this->load->view('administrator/header');
-	  		$this->load->view('administrator/header-bottom');
-	   		$this->load->view('administrator/sociallinks', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-		public function update_sociallinks($id = NULL)
-		{
-			$data['sociallinks'] = $this->Administrator_Model->update_sociallinks($id);
-			
-			$data['title'] = 'Update sociallinks';
-
-			$this->load->view('administrator/header-script');
-	 	 	$this->load->view('administrator/header');
-	  		$this->load->view('administrator/header-bottom');
-	   		$this->load->view('administrator/update-sociallinks', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-
-		public function update_sociallinks_data($page = 'update-sociallinks')
-		{
-
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    show_404();
-		   }
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-			$data['title'] = 'Update sociallinks';
-
-			$this->form_validation->set_rules('link', 'Link', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/'.$page, $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				
-				 $this->Administrator_Model->update_sociallinks_data();
-				//Set Message
-				$this->session->set_flashdata('success', 'sociallinks Details has been Updated Successfull.');
-				redirect('administrator/sociallinks');
-			}
-		}
-
-
-		// sliders
-		public function create_slider($page = 'add-slider')
-		{
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    show_404();
-		   }
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-
-			$data['title'] = 'Create Sliders Image';
-
-			//$data['add-user'] = $this->Administrator_Model->get_categories();
-
-			$this->form_validation->set_rules('title', 'Title', 'required');
-			if (empty($_FILES['userfile']['name'])){
-    		$this->form_validation->set_rules('userfile', 'Document', 'required');
-			}
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/'.$page, $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				//Upload Image
-				$config['upload_path'] = './assets/images/sliders';
-				$config['allowed_types'] = 'gif|jpg|png|jpeg';
-				$config['max_size'] = '2048';
-				$config['max_width'] = '2000';
-				$config['max_height'] = '2000';
-
-				$this->load->library('upload', $config);
-
-				if(!$this->upload->do_upload()){
-					$errors =  array('error' => $this->upload->display_errors());
-					$post_image = 'noimage.jpg';
-				}else{
-					$data =  array('upload_data' => $this->upload->data());
-					$post_image = $_FILES['userfile']['name'];
-				}
-				$this->Administrator_Model->create_slider($post_image);
-
-				//Set Message
-				$this->session->set_flashdata('success', 'Slider Image has been created Successfull.');
-				redirect('administrator/sliders');
-			}
-			
-		}
-
-
-		public function get_sliders()
-		{
-			$data['sliders'] = $this->Administrator_Model->get_sliders();
-
-			$data['title'] = 'Sliders';
-
-			$this->load->view('administrator/header-script');
-	 	 	$this->load->view('administrator/header');
-	  		$this->load->view('administrator/header-bottom');
-	   		$this->load->view('administrator/sliders', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-		
-
-		public function update_slider($id = NULL)
-		{
-			$data['sliders'] = $this->Administrator_Model->get_slider_data($id);
-			$data['title'] = 'Update Slider';
-
-			$this->load->view('administrator/header-script');
-	 	 	 $this->load->view('administrator/header');
-	  		 $this->load->view('administrator/header-bottom');
-	   		 $this->load->view('administrator/update-slider', $data);
-	  		$this->load->view('administrator/footer');
-		}
-
-		public function update_slider_data($page = 'update-slider')
-		{
-			if (!file_exists(APPPATH.'views/administrator/'.$page.'.php')) {
-		    show_404();
-		   }
-			// Check login
-			if(!$this->session->userdata('login')) {
-				redirect('administrator/index');
-			}
-			$data['title'] = 'Update Slider';
-
-			$this->form_validation->set_rules('title', 'Title', 'required');
-
-			if($this->form_validation->run() === FALSE){
-				 $this->load->view('administrator/header-script');
-		 	 	 $this->load->view('administrator/header');
-		  		 $this->load->view('administrator/header-bottom');
-		   		 $this->load->view('administrator/'.$page, $data);
-		  		 $this->load->view('administrator/footer');
-			}else{
-				//Upload Image
-				
-				$config['upload_path'] = './assets/images/sliders';
-				$config['allowed_types'] = 'gif|jpg|png|jpeg';
-				$config['max_size'] = '2048';
-				$config['max_width'] = '2000';
-				$config['max_height'] = '2000';
-
-				$this->load->library('upload', $config);
-
-				if(!$this->upload->do_upload()){
-					$id = $this->input->post('id');
-					$data['img'] = $this->Administrator_Model->get_slider_data($id);
-					$errors =  array('error' => $this->upload->display_errors());
-					$post_image = $data['img']['image'];
-				}else{
-					$data =  array('upload_data' => $this->upload->data());
-					$post_image = $_FILES['userfile']['name'];
-				}
-
-				$this->Administrator_Model->update_slider_data($post_image);
-
-				//Set Message
-				$this->session->set_flashdata('success', 'Slider Images has been Updated Successfull.');
-				redirect('administrator/sliders');
-			}
-			
-		}
-
 		// blogs functions start
-		public function add_blog($page = 'add-blog')
+		public function add_upsi($page = 'add-upsi')
 		{
-			// Check login
-			if(!$this->session->userdata('login')) {
+			if (!$this->session->userdata('login')) {
 				redirect('administrator/index');
 			}
 
-			$data['title'] = 'Add Blog';
-
-			$data['categories'] = $this->Post_Model->get_categories();
-
-			$this->form_validation->set_rules('title', 'Title', 'required');
-			$this->form_validation->set_rules('body', 'Body', 'required');
-
-			if($this->form_validation->run() === FALSE){
+			$data['title'] = 'Upload UPSI';
+			if (!$this->input->post()) {
 				$this->load->view('administrator/header-script');
-			   	$this->load->view('administrator/header');
-			   	$this->load->view('administrator/header-bottom');
-			   	$this->load->view('administrator/'.$page, $data);
-			   	$this->load->view('administrator/footer');	
-			}else{
-				//Upload Image
-				$config['upload_path'] = './assets/images/posts';
-				$config['allowed_types'] = 'gif|jpg|png|jpeg';
-				$config['max_size'] = '2048';
-				$config['max_width'] = '2000';
-				$config['max_height'] = '2000';
+				$this->load->view('administrator/header');
+				$this->load->view('administrator/header-bottom');
+				$this->load->view('administrator/' . $page, $data);
+				$this->load->view('administrator/footer');
+			} else {
 
-				$this->load->library('upload', $config);
+			$file = $_FILES['userfile']['tmp_name'];
+			$spreadsheet = IOFactory::load($file);
+            $worksheet = $spreadsheet->getActiveSheet();
+			$columnIndex = 'O'; // Specify the column containing email IDs
+    		// Specify the starting row (excluding header)
+			$startRow = 2;
 
-				if(!$this->upload->do_upload()){
-					$errors =  array('error' => $this->upload->display_errors());
-					$post_image = 'noimage.png';
-				}else{
-					$data =  array('upload_data' => $this->upload->data());
-					$post_image = $_FILES['userfile']['name'];
-				}
-				$this->Administrator_Model->create_blog($post_image);
+			foreach ($worksheet->getRowIterator($startRow) as $row) {
+				// Extract data from cells
+				$natureOfUPSI = $worksheet->getCell('B' . $row->getRowIndex())->getValue();
+				$purpose = "`" . $worksheet->getCell('C' . $row->getRowIndex())->getValue() . "`";
+				$dateOfSharing = $worksheet->getCell('D' . $row->getRowIndex())->getValue();
+				$periodOfUPSIFrom = $worksheet->getCell('E' . $row->getRowIndex())->getValue();
+				$periodOfUPSITo = $worksheet->getCell('F' . $row->getRowIndex())->getValue();
+				$currentStatus = $worksheet->getCell('I' . $row->getRowIndex())->getValue();
+				$createdBy = $worksheet->getCell('J' . $row->getRowIndex())->getValue();
+				//$mailDate = $worksheet->getCell('K' . $row->getRowIndex())->getValue();
+				$mailTime = $worksheet->getCell('L' . $row->getRowIndex())->getValue();
+				$acquisitionDate = $worksheet->getCell('M' . $row->getRowIndex())->getValue();
+				$upsiSourceemail = $worksheet->getCell('N' . $row->getRowIndex())->getValue();
+				//$systemEntryDate = $worksheet->getCell('G' . $row->getRowIndex())->getValue();
+				$systemEntryTime = $worksheet->getCell('H' . $row->getRowIndex())->getValue();
+				$recipients = $worksheet->getCell('O' . $row->getRowIndex())->getValue();
 
-				//Set Message
-				$this->session->set_flashdata('post_created', 'Your post has been created.');
-				redirect('administrator/blogs/list-blog');
+				$dateOfSharing = ($dateOfSharing - 25569) * 86400;
+    			$dateOfSharing = gmdate("d-m-Y", $dateOfSharing);
+				$periodOfUPSIFrom = gmdate("d-m-Y", ($periodOfUPSIFrom - 25569) * 86400);
+				$periodOfUPSITo = gmdate("d-m-Y", ($periodOfUPSITo - 25569) * 86400);
+				$acquisitionDate = gmdate("d-m-Y", ($acquisitionDate - 25569) * 86400);
+				$roundedSystemEntryTime = round($systemEntryTime * 86400);
+    			$systemEntryTime = gmdate("H:i:s", $roundedSystemEntryTime);
+
+				$roundedMailTime = round($mailTime * 86400);
+				$mailTime = gmdate("H:i:s", $roundedMailTime);
+				// Create an array with the extracted values
+				$insert_data = array(
+					'nature_of_upsi' => $natureOfUPSI,
+					'purpose' => $purpose,
+					'date_of_sharing' => $dateOfSharing,
+					'period_of_upsi_from' => $periodOfUPSIFrom,
+					'period_of_upsi_to' => $periodOfUPSITo,
+					'current_status' => $currentStatus,
+				    'created_by' => $createdBy,
+					'mail_date' => $dateOfSharing,
+					'mail_time' => $mailTime,
+					'system_entry_date' => $dateOfSharing,
+					'system_entry_time' => $systemEntryTime,
+					'date_of_acquisition' => $acquisitionDate,
+					'upsi_received_from' => $upsiSourceemail,
+					'recipients' => $recipients,
+				);
+				
+				$this->Administrator_Model->create_upsi_data($insert_data);
+
+				// Config for file upload
+				// $config['upload_path'] = './assets/userfile/';
+				// $config['allowed_types'] = 'csv|xls|xlsx';
+				// $this->load->library('upload', $config);
+
+				// if (!$this->upload->do_upload('userfile')) {
+				// 	$error = array('error' => $this->upload->display_errors('<p>', '</p>'));
+				// 	$this->load->view('upload_form', $error); // Adjust the view name as needed
+				// } else {
+				// 	$data = array('upload_data' => $this->upload->data());
+				// 	$file_path = base_url('assets/userfile/') . $data['upload_data']['file_name'];
+				
 			}
 			
+			$this->session->set_flashdata('post_created', 'Your post has been created.');		
+			redirect('administrator/upsi/list-upsi');
 		}
+	}		
 
-		public function list_blog($offset = 0){
+		public function edit_upsi($id) {
+
+
+        $data['upsi'] = $this->Administrator_Model->get_upsi_by_id($id);
+		$data['recipients'] = $this->Administrator_Model->get_recipients(FALSE, $config['per_page'] = 500, $offset = 0);
+		
+		//print_r($data['recipients']);die;
+		$data['title'] = 'UPSI Edit';
+		$this->load->view('administrator/header-script');
+		$this->load->view('administrator/header');
+		$this->load->view('administrator/header-bottom');
+		$this->load->view('administrator/upsi-edit', $data);
+		$this->load->view('administrator/footer');
+        }
+
+		public function list_upsi($offset = 0){
 			// Pagination Config
-			$config['base_url'] = base_url(). 'administrator/blogs/';
-			$config['total_rows'] = $this->db->count_all('posts');
-			$config['per_page'] = 3;
+			$config['base_url'] = base_url(). 'administrator/upsi/list-upsi/';
+			$config['total_rows'] = $this->db->count_all('upsi_sharing');
+			$config['per_page'] = 1000;
 			$config['uri_segment'] = 3;
 			$config['attributes'] = array('class' => 'paginate-link');
 
 			// Init Pagination
 			$this->pagination->initialize($config);
 
-			$data['title'] = 'List of Blogs';
+			$data['title'] = 'List of UPSI';
 
-			$data['blogs'] = $this->Administrator_Model->listblogs(FALSE, $config['per_page'], $offset);
+			$data['upsi'] = $this->Administrator_Model->listupsi(FALSE, $config['per_page'], $offset);
 
 			$this->load->view('administrator/header-script');
 			$this->load->view('administrator/header');
 			$this->load->view('administrator/header-bottom');
-			$this->load->view('administrator/list-blogs', $data);
+			$this->load->view('administrator/list-upsi', $data);
 			$this->load->view('administrator/footer');
 		}
+
+		public function upsi_sharing($offset = 0){
+			$config['base_url'] = base_url(). 'administrator/upsi/list-upsi/';
+			$config['total_rows'] = $this->db->count_all('upsi_sharing');
+			$config['per_page'] = 1000;
+			$config['uri_segment'] = 3;
+			$config['attributes'] = array('class' => 'paginate-link');
+
+			$data['recipients'] = $this->Administrator_Model->get_recipients(FALSE, $config['per_page'], $offset);
+			$data['upsi'] = $this->Administrator_Model->listupsi(FALSE, $config['per_page'], $offset);
+
+			$data['title'] = 'UPSI Sharing';
+			$this->load->view('administrator/header-script');
+			$this->load->view('administrator/header');
+			$this->load->view('administrator/header-bottom');
+			$this->load->view('administrator/upsi-sharing', $data);
+			$this->load->view('administrator/footer');
+		}
+
+		public function update_upsi($upsi_id) {
+    if(!$this->session->userdata('login')) {
+        redirect('administrator/index');
+    }
+    if($this->input->post()) {
+        $upsi_data = array(
+            'nature_of_upsi' => $this->input->post('nature_of_upsi'),
+            'purpose' => $this->input->post('purpose'),
+            'date_of_sharing' => $this->input->post('date_of_sharing'),
+            'mail_time' => $this->input->post('mail_time'),
+            'created_by' => $this->input->post('created_by'),
+            'period_of_upsi_from' => $this->input->post('period_of_upsi_from'),
+            'period_of_upsi_to' => $this->input->post('period_of_upsi_to'),
+            'system_entry_date' => $this->input->post('system_entry_date'),
+            'system_entry_time' => $this->input->post('system_entry_time'),
+            'recipients' => implode(',', $this->input->post('recipients')) // Combine recipients into a comma-separated string
+        );
+        $this->Administrator_Model->update_upsi($upsi_id, $upsi_data);
+
+        $this->session->set_flashdata('upsi_updated', 'UPSI details updated successfully.');
+
+        redirect('administrator/upsi/list-upsi');
+    } else {
+        redirect('administrator/upsi/edit_upsi/'.$upsi_id);
+    }
+}
+
+
+	public function edit_recipients($recipient_id) {
+		$offset = 0; 
+		$config['per_page'] = 1000;
+		$config['uri_segment'] = 3;
+		$data['recipient'] = $this->Administrator_Model->get_recipients(FALSE, $config['per_page'], $offset);
+
+		$data['title'] = 'Edit Recipient';
+		$this->load->view('administrator/header-script');
+		$this->load->view('administrator/header');
+		$this->load->view('administrator/header-bottom');
+		$this->load->view('administrator/recipient-edit', $data);
+		$this->load->view('administrator/footer');
+    }
+
+	public function update_recipient($recipient_id) {	
+
+		
+	$data = array(
+		'recipient_name' => $this->input->post('recipient_name'),
+		'capacity' => $this->input->post('capacity'),
+		'identifier_number' => $this->input->post('identifier_number'),
+		'email_address' => $this->input->post('email_address'),
+		'entity_type' => $this->input->post('entity_type'),
+		'organisation' => $this->input->post('organisation')
+	);
+		$this->Administrator_Model->update_recipient($recipient_id, $data);
+		redirect('administrator/recipients');
+	}
+
+	 public function delete_recipient($recipient_id) {
+        $this->Administrator_Model->delete($recipient_id,"recipients");
+        redirect('administrator/recipients');
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
 		public function update_blog($blog_id = false){
 			// Check login
 			if(!$this->session->userdata('login')) {
@@ -1723,7 +1224,3 @@ public function update_password(){
 		
 	}
 	
-
-
-
-

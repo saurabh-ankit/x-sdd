@@ -1,10 +1,16 @@
 <?php
+require_once   './vendor/autoload.php';
+use PhpOffice\PhpSpreadsheet\IOFactory;
 	class Administrator_Model extends CI_Model
 	{
+		
+
 		public function __construct()
 		{
 			$this->load->database();
+			
 		}
+		
 
 		public function adminLogin($email, $encrypt_password){
 			//Validate
@@ -79,6 +85,47 @@
 			return $this->db->insert('users', $data);
 		}
 
+		public function add_recipients()
+		{
+			$data = array('recipient_name' => $this->input->post('recipient_name'), 
+							'capacity' => $this->input->post('capacity'),
+							'identifier_number' => $this->input->post('identifier_number'),
+							'email_address' => $this->input->post('email_address'),
+							'entity_type' => $this->input->post('entity_type'),
+							'organisation' => $this->input->post('organisation'),
+						  );
+			return $this->db->insert('recipients', $data);
+		}
+		public function update_recipient($recipient_id, $data) {
+			// Update the recipient details in the database
+			$this->db->where('id', $recipient_id);
+			$this->db->update('recipients', $data);
+		}
+		public function update_upsi($upsi_id, $upsi_data) {
+			$this->db->where('id', $upsi_id);
+			$this->db->update('upsi_sharing', $upsi_data);
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		public function get_users($username = FALSE, $limit = FALSE, $offset = FALSE)
 		{
 			if ($limit) {
@@ -89,6 +136,21 @@
 				$this->db->order_by('users.id', 'DESC');
 				//$this->db->join('categories', 'categories.id = posts.category_id');
 				$query = $this->db->get('users');
+				return $query->result_array(); 
+			}
+
+			$query = $this->db->get_where('users', array('username' => $username));
+			return $query->row_array();
+		}
+		public function get_recipients($username = FALSE, $limit = FALSE, $offset = FALSE)
+		{
+			if ($limit) {
+				$this->db->limit($limit, $offset);
+			}
+
+			if($username === FALSE){
+				$this->db->order_by('recipients.id', 'DESC');
+				$query = $this->db->get('recipients');
 				return $query->result_array(); 
 			}
 
@@ -467,36 +529,35 @@
 			return $this->db->update('sliders_img', $data);
 		}
 
-		// blogs models functions starts
-		public function create_blog($post_image)
-		{
-			$slug = url_title($this->input->post('title'), "dash", TRUE);
+		
 
-			$data = array(
-				'title' => $this->input->post('title'), 
-			    'slug' => $slug,
-			    'body' => $this->input->post('body'),
-			    'category_id' => $this->input->post('category_id'),
-			    'post_image' => $post_image,
-			    'user_id' => $this->session->userdata('user_id')
-			    );
-			return $this->db->insert('posts', $data);
+		public function create_upsi_data($insert_data)
+		{
+			
+			$this->db->insert('upsi_sharing', $insert_data);
+			return true;
 		}
 
-		public function listblogs($blogId = FALSE, $limit = FALSE, $offset = FALSE)
+		public function get_upsi_by_id($id) {
+        // Replace 'your_table' with your actual database table name
+        $query = $this->db->get_where('upsi_sharing', array('id' => $id));
+        return $query->row_array();
+    	}
+
+
+		public function listupsi($upsiId = FALSE, $limit = FALSE, $offset = FALSE)
 		{
 			if ($limit) {
 				$this->db->limit($limit, $offset);
 			}
 
-			if($blogId === FALSE){
-				$this->db->order_by('posts.id', 'DESC');
-				//$this->db->join('categories as cat', 'cat.id = posts.category_id');
-				$query = $this->db->get('posts');
+			if($upsiId === FALSE){
+				$this->db->order_by('upsi_sharing.id', 'DESC');
+				$query = $this->db->get('upsi_sharing');
 				return $query->result_array(); 
 			}
 
-			$query = $this->db->get_where('posts', array('id' => $blogId));
+			$query = $this->db->get_where('upsi_sharing', array('id' => $upsiId));
 			return $query->row_array();
 		}
 

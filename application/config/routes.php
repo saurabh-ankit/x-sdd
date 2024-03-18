@@ -30,13 +30,25 @@ $route['administrator/dashboard'] = 'administrator/dashboard';
 $route['administrator/change-password'] = 'administrator/get_admin_data';
 $route['administrator/update-profile'] = 'administrator/update_admin_profile';
 
+$route['administrator/recipients/add-recipients'] = 'administrator/add_recipients';
+$route['administrator/recipients'] = 'administrator/recipients';
+// $route['administrator/recipients/'] = 'administrator/recipients';
+$route['administrator/recipients/edit_recipients/(:any)'] = 'administrator/edit_recipients/$1';
+$route['administrator/recipients/delete_recipients/(:any)'] = 'administrator/delete_recipients/$1';
+
+
 $route['administrator/users/add-user'] = 'administrator/add_user';
 $route['administrator/users'] = 'administrator/users';
 $route['administrator/users/update-user/(:any)'] = 'administrator/update_user/$1';
 
-$route['administrator/blogs/add-blog'] = 'administrator/add_blog';
-$route['administrator/blogs/list-blog'] = 'administrator/list_blog';
-$route['administrator/blogs/update-blog'] = 'administrator/update_blog';
+$route['administrator/upsi/add-upsi'] = 'administrator/add_upsi';
+$route['administrator/upsi/list-upsi'] = 'administrator/list_upsi';
+$route['administrator/upsi/edit_upsi/(:any)'] = 'administrator/edit_upsi/$1';
+
+
+$route['administrator/upsi/update-upsi/(:any)'] = 'administrator/update_upsi/$1';
+$route['administrator/upsi/delete-upsi/(:any)'] = 'administrator/delete_upsi/$1';
+$route['administrator/upsi/upsi-sharig'] = 'administrator/upsi_sharing';
 
 $route['administrator/product-categories/create'] = 'administrator/create_product_category';
 $route['administrator/product-categories/update/(:any)'] = 'administrator/update_product_category/$1';
@@ -88,13 +100,3 @@ $route['administrator/testimonials/update/(:any)'] = 'administrator/update_testi
 $route['(:any)'] = 'pages/view/$1';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
-
-
-
-
-
-
-
-
-
-

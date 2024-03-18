@@ -23,7 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = '';
+$config['base_url'] = 'http://localhost/x-sdd/';
 
 /*
 |--------------------------------------------------------------------------
@@ -419,6 +419,8 @@ $config['cookie_httponly'] 	= FALSE;
 |
 */
 $config['standardize_newlines'] = FALSE;
+$config['composer_autoload'] = '';
+
 
 /*
 |--------------------------------------------------------------------------

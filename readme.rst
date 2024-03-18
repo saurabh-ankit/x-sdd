@@ -131,15 +131,10 @@
 	Run The Project - 	
 	Front - localhost/{projectname}				
 	Admin Backend - localhost/{projectname}/administrator		
-			Admin UserName - ynandan55@gmail.com		
+			Admin UserName - admin@xelpmoc.in		
 			      Password - 123456		
 	
 	
 
 
-**Note:-** This product developed by Yadu Nandan Kushwaha .. 
 
-	   Please contact if having any query. Mail to – ynandan55@gmail.com || https://github.com/yadunandankushwaha 
-	   
-
-	

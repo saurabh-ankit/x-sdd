@@ -187,7 +187,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 			//$data['add-user'] = $this->Administrator_Model->get_categories();
 			$this->form_validation->set_rules('recipient_name', 'Recipient Name', 'required');
 			$this->form_validation->set_rules('identifier_number', 'Identifier Number', 'required|callback_check_username_exists');
-			$this->form_validation->set_rules('email', 'Email', 'required|callback_check_email_exists');
+			$this->form_validation->set_rules('email_address', 'Email', 'required|callback_check_email_exists');
 			if($this->form_validation->run() === FALSE){
 				 $this->load->view('administrator/header-script');
 		 	 	 $this->load->view('administrator/header');
@@ -197,8 +197,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 			}else{	
 				$this->Administrator_Model->add_recipients();
 				//Set Message
-				$this->session->set_flashdata('success', 'User has been created Successfull.');
-				redirect('administrator/users');
+				$this->session->set_flashdata('success', 'Recipients has been created Successfull.');
+				redirect('administrator/recipients');
 			}
 			
 		}

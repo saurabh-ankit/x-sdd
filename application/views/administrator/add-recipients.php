@@ -52,7 +52,7 @@
                            </div>
                        </div>
                        <div class="col-sm-8">
-                           <?php echo form_open_multipart('administrator/add_user'); ?>
+                           <?php echo form_open_multipart('administrator/add_recipients'); ?>
 
                            <div class="form-group row">
                                <label class="col-sm-2 col-form-label">Recipient Name</label>

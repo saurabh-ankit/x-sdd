@@ -34,7 +34,7 @@ $route['administrator/recipients/add-recipients'] = 'administrator/add_recipient
 $route['administrator/recipients'] = 'administrator/recipients';
 // $route['administrator/recipients/'] = 'administrator/recipients';
 $route['administrator/recipients/edit_recipients/(:any)'] = 'administrator/edit_recipients/$1';
-$route['administrator/recipients/delete_recipients/(:any)'] = 'administrator/delete_recipients/$1';
+$route['administrator/recipients/delete_recipient/(:any)'] = 'administrator/delete_recipient/$1';
 
 
 $route['administrator/users/add-user'] = 'administrator/add_user';

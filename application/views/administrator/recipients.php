@@ -83,7 +83,7 @@ $(document).ready(function() {
                                      <a class="label label-inverse-info"
                                          href='<?php echo base_url(); ?>administrator/recipients/edit_recipients/<?php echo $post['id']; ?>'>Edit</a>
                                      <a class="label label-inverse-danger delete"
-                                         href='<?php echo base_url(); ?>administrator/recipients/delete_recipients/<?php echo $post['id']; ?>?table=<?php echo base64_encode('users'); ?>'>Delete</a>
+                                         href='<?php echo base_url(); ?>administrator/recipients/delete_recipient/<?php echo $post['id']; ?>'>Delete</a>
                                  </td>
                              </tr>
                              <?php endforeach; ?>

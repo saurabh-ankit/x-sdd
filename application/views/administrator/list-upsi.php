@@ -98,7 +98,7 @@ $(document).ready(function() {
                              <tr>
                                  <td><?php echo $key['id']; ?></td>
                                  <td><?php echo $key['nature_of_upsi']; ?></td>
-                                 <td><?php echo $key['date_of_sharing']; ?></td>
+                                 <td><?php echo date('d-m-Y', strtotime($key['date_of_sharing'])); ?></td>
                                  <td><?php echo $key['mail_time']; ?></td>
                                  <td>
                                      <?php 
@@ -116,7 +116,7 @@ $(document).ready(function() {
                                     }
 
                                     // Output creator's name
-                                    echo $created_by_name;
+                                    echo !empty($created_by_name) ? $created_by_name : $created_by_email;
                                     ?>
                                  </td>
                                  <td><?php //echo $key['department']; ?></td>
@@ -135,7 +135,8 @@ $(document).ready(function() {
                                         $recipient_name = $recipient_data['recipient_name'];
                                     }
                                     // Output recipient's name
-                                    echo $recipient_name . '<br>';
+                                    echo !empty($recipient_name) ? $recipient_name : $email;
+                                    echo '<br>';
                                 }
                                 ?>
                                  </td>

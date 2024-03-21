@@ -552,7 +552,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 			}
 
 			if($upsiId === FALSE){
-				$this->db->order_by('upsi_sharing.date_of_sharing', 'ASC');
+				$this->db->order_by('upsi_sharing.date_of_sharing', 'DESC');
 				$query = $this->db->get('upsi_sharing');
 				return $query->result_array(); 
 			}

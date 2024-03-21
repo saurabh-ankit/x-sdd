@@ -554,6 +554,12 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
         redirect('administrator/recipients');
     }
 
+	 public function delete_upsi($upsi_id) {
+        $this->Administrator_Model->delete($upsi_id,"upsi_sharing");
+        redirect('administrator/upsi/list-upsi');
+    }
+
+
 
 
 

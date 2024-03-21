@@ -68,11 +68,11 @@ $(document).ready(function() {
                                  <i class="icofont icofont-home"></i>
                              </a>
                          </li>
-                         <li class="breadcrumb-item"><a href="<?php echo site_url();?>administrator/add/blog">Add
+                         <li class="breadcrumb-item"><a href="<?php //echo site_url();?>administrator/add/blog">Add
                                  UPSI</a>
                          </li>
                          <li class="breadcrumb-item"><a
-                                 href="<?php echo site_url();?>administrator/blogs/list-blog">List UPSI</a>
+                                 href="<?php //echo site_url();?>administrator/blogs/list-blog">List UPSI</a>
                          </li>
                      </ul>
                  </div>
@@ -148,6 +148,10 @@ $(document).ready(function() {
                                      <!-- Add an Edit button linking to your edit action/controller method -->
                                      <a href="<?php echo base_url('administrator/upsi/edit_upsi/' . $key['id']); ?>"
                                          class="label label-inverse-info">Edit</a>
+                                     <a class="label label-inverse-danger delete"
+                                         href="<?php echo base_url(); ?>administrator/upsi/delete_upsi/<?php echo $key['id']; ?>"
+                                         onclick="return confirm('Are you sure you want to delete?');">Delete</a>
+
                                  </td>
 
 

@@ -44,6 +44,8 @@ $route['administrator/users/update-user/(:any)'] = 'administrator/update_user/$1
 $route['administrator/upsi/add-upsi'] = 'administrator/add_upsi';
 $route['administrator/upsi/list-upsi'] = 'administrator/list_upsi';
 $route['administrator/upsi/edit_upsi/(:any)'] = 'administrator/edit_upsi/$1';
+$route['administrator/upsi/delete_upsi/(:any)'] = 'administrator/delete_upsi/$1';
+
 
 
 $route['administrator/upsi/update-upsi/(:any)'] = 'administrator/update_upsi/$1';
